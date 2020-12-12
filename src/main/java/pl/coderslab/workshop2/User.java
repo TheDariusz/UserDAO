@@ -4,6 +4,13 @@ public class User {
     private int id;
     private String userName;
     private String email;
+
+    public User(String userName, String email, String password) {
+        this.userName = userName;
+        this.email = email;
+        this.password = password;
+    }
+
     private String password;
 
     public int getId() {
