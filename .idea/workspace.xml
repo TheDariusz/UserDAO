@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3522e520-123c-44aa-b249-407871d50633" name="Default Changelist" comment="gitignore changes">
-      <change afterPath="$PROJECT_DIR$/src/main/java/pl/coderslab/workshop2/console.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pl/coderslab/workshop2/DBUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/coderslab/workshop2/DBUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pl/coderslab/workshop2/UserDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/coderslab/workshop2/UserDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/pl/coderslab/workshop2/console.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/coderslab/workshop2/console.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,7 +95,7 @@
       <option name="presentableId" value="Default" />
       <updated>1607774274186</updated>
       <workItem from="1607774275421" duration="7500000" />
-      <workItem from="1607781812015" duration="4423000" />
+      <workItem from="1607781812015" duration="4794000" />
     </task>
     <task id="LOCAL-00001" summary="commit 2">
       <created>1607781044123</created>

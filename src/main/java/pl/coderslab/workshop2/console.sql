@@ -4,7 +4,7 @@ CREATE TABLE users (
     email varchar(255) not null unique,
     username varchar(255) not null,
     password varchar(60) not null
-)
+);
 
 INSERT INTO users (email, username, password) VALUES ('thedariusz@gmail.com', 'TheDariusz', 'testtest');
 INSERT INTO users (email, username, password) VALUES ('mario@gmail.com', 'Mario69', 'nintendo');
