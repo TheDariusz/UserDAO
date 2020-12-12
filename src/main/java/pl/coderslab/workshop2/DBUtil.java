@@ -56,44 +56,20 @@ public class DBUtil {
         }
     }
 
-    public static ResultSet getRows(Connection conn, String query, String...params){
-        ResultSet rs = null;
-        try ( PreparedStatement statement = conn.prepareStatement(query)) {
-            for (int i = 0; i < params.length; i++) {
-                statement.setString(i + 1, params[i]);
+    public static void printAllData(Connection conn, String query) throws SQLException {
+        try (PreparedStatement statement = conn.prepareStatement(query);
+             ResultSet rs = statement.executeQuery()) {
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int numberOfColumns = rsmd.getColumnCount();
+            while (rs.next()) {
+                for (int i = 1; i<=numberOfColumns; i++) {
+                    System.out.print(rs.getString(i) + " | ");
+                }
+                System.out.println();
             }
-            rs = statement.executeQuery();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return rs;
     }
 
-    public static ResultSet getRows(Connection conn, String query){
-        ResultSet rs = null;
-        try ( PreparedStatement statement = conn.prepareStatement(query)) {
-            rs = statement.executeQuery();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return rs;
-    }
-
-    public static void showRows(ResultSet rs){
-        ResultSetMetaData rsmd = null;
-        try {
-            rsmd = rs.getMetaData();
-            System.out.println(rsmd.getColumnCount());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-
-//        while (rs.next()) {
-//            for (String param : columnNames) {
-//                System.out.print(resultSet.getString(param) + " | ");
-//            }
-//            System.out.println();
-//        }
-    }
 }
