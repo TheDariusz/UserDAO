@@ -1,5 +1,7 @@
 package pl.coderslab.workshop2;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pl.coderslab.bcrypt.BCrypt;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -7,11 +9,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+
 public class UserDAO {
+    private static Logger logger = LogManager.getLogger(UserDAO.class);
+
     private static final String CREATE_USER_QUERY =
             "INSERT INTO users(username, email, password) VALUES (?, ?, ?)";
-    private static final String SELECT_USER_QUERY =
-            "SELECT * FROM users WHERE id=?";
     private static final String UPDATE_USER_QUERY =
             "UPDATE users SET username=?, email=?, password=? WHERE id=?";
     private static final String CHECK_EMAIL_QUERY =
@@ -22,7 +25,7 @@ public class UserDAO {
             return null;
         }
         if (emailAlreadyExists(user.getId(), user.getEmail())) {
-            System.out.println("User with email " + user.getEmail() + " already exists!");
+            logger.error("User with email {} already exists!", user.getEmail());
             return null;
         }
 
@@ -40,7 +43,7 @@ public class UserDAO {
             }
             return user;
         } catch (SQLException e) {
-            System.out.println("Create user query failed!");
+            logger.error("Create user query failed!", e);
             e.printStackTrace();
             return null;
         }
@@ -48,8 +51,7 @@ public class UserDAO {
 
     public void update(User user) {
         if (emailAlreadyExists(user.getId(), user.getEmail())) {
-            System.out.println("User with email " + user.getEmail() + " already exists!");
-            System.out.println("record was not updated!");
+            logger.error("User with email {} already exists!", user.getEmail());
             return;
         }
         try (Connection conn = DBUtil.getConnection();
@@ -61,7 +63,7 @@ public class UserDAO {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            System.out.println("Update query failed!");
+            logger.error("Update query failed!", e);
             e.printStackTrace();
         }
     }
@@ -76,7 +78,7 @@ public class UserDAO {
                 return true;
             }
         } catch (SQLException e) {
-            System.out.println("Check email query failed!");
+            logger.error("Check email query failed!", e);
             e.printStackTrace();
         }
         return false;

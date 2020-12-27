@@ -8,6 +8,10 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 public class DBUtil {
+    private DBUtil() {
+        throw new IllegalStateException("Utility class!");
+    }
+
     public static final String DB_SCHEMA = "workshop2";
     public static final String DB_URL = "jdbc:mysql://localhost:3306/" +
                                                 DB_SCHEMA + "?useSSL=false&characterEncoding=utf8";
