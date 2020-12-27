@@ -12,6 +12,6 @@ INSERT INTO users (email, username, password) VALUES ('leon@yahoo.com', 'Leonias
 
 SELECT * FROM users -- WHERE id=1;
 
-UPDATE users SET password='testtesttest' WHERE id=1;
+UPDATE users SET username='costam', email='cos@costam.com', password='testtesttest' WHERE id=1;
 
 DELETE FROM users WHERE id=3;

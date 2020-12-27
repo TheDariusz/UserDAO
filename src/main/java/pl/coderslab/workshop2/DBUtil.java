@@ -31,7 +31,7 @@ public class DBUtil {
     }
 
 
-    public static void printData(Connection conn, String query, String... columnNames) throws SQLException {
+    public static void printData(Connection conn, String query, String... columnNames) {
         try (PreparedStatement statement = conn.prepareStatement(query);
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
@@ -56,7 +56,7 @@ public class DBUtil {
         }
     }
 
-    public static void printAllData(Connection conn, String query) throws SQLException {
+    public static void printAllData(Connection conn, String query) {
         try (PreparedStatement statement = conn.prepareStatement(query);
              ResultSet rs = statement.executeQuery()) {
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -68,6 +68,23 @@ public class DBUtil {
                 System.out.println();
             }
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void printDataRS(ResultSet rs, int... colNumbers) throws SQLException {
+        while (rs.next()) {
+            for (int column : colNumbers) {
+                System.out.print(rs.getString(column) + " | ");
+            }
+            System.out.println();
+        }
+    }
+
+    public static void execute(Connection conn, String query) {
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.executeUpdate();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
