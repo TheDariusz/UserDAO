@@ -10,14 +10,16 @@ import org.apache.logging.log4j.Logger;
 import pl.coderslab.bcrypt.BCrypt;
 
 public class UserDAO {
-  private static Logger logger = LogManager.getLogger(UserDAO.class);
-
   private static final String CREATE_USER_QUERY =
       "INSERT INTO users(username, email, password) VALUES (?, ?, ?)";
   private static final String UPDATE_USER_QUERY =
       "UPDATE users SET username=?, email=?, password=? WHERE id=?";
   private static final String CHECK_EMAIL_QUERY =
       "SELECT users.id FROM users WHERE email=? and id<>?";
+  private static final String SELECT_USER_ID_QUERY = "SELECT * FROM users WHERE id=?";
+  private static final String SELECT_USER_EMAIL_QUERY = "SELECT * FROM users WHERE email=?";
+  private static final String DELETE_USER_ID_QUERY = "DELETE FROM users WHERE id=?;";
+  private static Logger logger = LogManager.getLogger(UserDAO.class);
 
   public User create(User user) {
     if (user == null) {
@@ -35,7 +37,6 @@ public class UserDAO {
       stmt.setString(2, user.getEmail());
       stmt.setString(3, hashPassword(user.getPassword()));
       stmt.executeUpdate();
-
       ResultSet rs = stmt.getGeneratedKeys();
       if (rs.next()) {
         user.setId(rs.getInt(1));
@@ -59,10 +60,59 @@ public class UserDAO {
       stmt.setString(2, user.getEmail());
       stmt.setString(3, hashPassword(user.getPassword()));
       stmt.setInt(4, user.getId());
+      logger.info("User {id: {}, email: {}} updated in DB!", user.getId(), user.getEmail());
       stmt.executeUpdate();
-
     } catch (SQLException e) {
       logger.error("Update query failed!", e);
+    }
+  }
+
+  public User read(int userId) {
+    try (Connection conn = DBUtil.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(SELECT_USER_ID_QUERY)) {
+      stmt.setInt(1, userId);
+      ResultSet rs = stmt.executeQuery();
+      while (rs.next()) {
+        User user =
+            new User(rs.getString("username"), rs.getString("email"), rs.getString("password"));
+        user.setId(rs.getInt("id"));
+        return user;
+      }
+    } catch (SQLException e) {
+      logger.error("User select query failed!", e);
+    }
+    return null;
+  }
+
+  public User read(String userEmail) {
+    try (Connection conn = DBUtil.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(SELECT_USER_EMAIL_QUERY)) {
+      stmt.setString(1, userEmail);
+      ResultSet rs = stmt.executeQuery();
+      while (rs.next()) {
+        User user =
+            new User(rs.getString("username"), rs.getString("email"), rs.getString("password"));
+        user.setId(rs.getInt("id"));
+        return user;
+      }
+    } catch (SQLException e) {
+      logger.error("User select query failed!", e);
+    }
+    return null;
+  }
+
+  public void delete(int userId) {
+    try (Connection conn = DBUtil.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(DELETE_USER_ID_QUERY)) {
+      stmt.setInt(1, userId);
+      int result = stmt.executeUpdate();
+      if (result == 1) {
+        logger.info("User with id:{} was deleted in DB!", userId);
+      } else {
+        logger.info("User with id:{} was not found in DB!", userId);
+      }
+    } catch (SQLException e) {
+      logger.error("Delete user query failed!", e);
     }
   }
 

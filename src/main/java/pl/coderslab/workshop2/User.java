@@ -4,14 +4,13 @@ public class User {
   private int id = 0;
   private String userName;
   private String email;
+  private String password;
 
   public User(String userName, String email, String password) {
     this.userName = userName;
     this.email = email;
     this.password = password;
   }
-
-  private String password;
 
   public int getId() {
     return id;
@@ -43,5 +42,15 @@ public class User {
 
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  @Override
+  public String toString() {
+    return "User{" +
+            "id=" + id +
+            ", userName='" + userName + '\'' +
+            ", email='" + email + '\'' +
+            ", password='" + password + '\'' +
+            '}';
   }
 }
