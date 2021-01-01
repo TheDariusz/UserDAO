@@ -10,7 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pl.coderslab.bcrypt.BCrypt;
 
-public class UserDAO {
+public class UserDao {
   private static final String CREATE_USER_QUERY =
       "INSERT INTO users(username, email, password) VALUES (?, ?, ?)";
   private static final String UPDATE_USER_QUERY =
@@ -21,7 +21,7 @@ public class UserDAO {
   private static final String SELECT_USER_EMAIL_QUERY = "SELECT * FROM users WHERE email=?";
   private static final String DELETE_USER_ID_QUERY = "DELETE FROM users WHERE id=?;";
   private static final String SELECT_ALL_QUERY = "SELECT * FROM users";
-  private static final Logger logger = LogManager.getLogger(UserDAO.class);
+  private static final Logger logger = LogManager.getLogger(UserDao.class);
 
   public User create(User user) {
     if (user == null) {
@@ -37,8 +37,8 @@ public class UserDAO {
       return null;
     }
 
-    try (Connection conn = DBUtil.getConnection();
-        PreparedStatement stmt =
+    try (Connection conn = DbUtil.getConnection();
+         PreparedStatement stmt =
             conn.prepareStatement(CREATE_USER_QUERY, Statement.RETURN_GENERATED_KEYS)) {
       setCreateStatement(user, stmt);
       stmt.executeUpdate();
@@ -65,8 +65,8 @@ public class UserDAO {
       return;
     }
 
-    try (Connection conn = DBUtil.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(UPDATE_USER_QUERY)) {
+    try (Connection conn = DbUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(UPDATE_USER_QUERY)) {
       setUpdateStatement(user, stmt);
       stmt.executeUpdate();
       logger.info("User {id: {}, email: {}} updated in DB!", user.getId(), user.getEmail());
@@ -81,8 +81,8 @@ public class UserDAO {
       return null;
     }
 
-    try (Connection conn = DBUtil.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(SELECT_USER_ID_QUERY)) {
+    try (Connection conn = DbUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(SELECT_USER_ID_QUERY)) {
       stmt.setInt(1, userId);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
@@ -97,8 +97,8 @@ public class UserDAO {
   }
 
   public User read(String userEmail) {
-    try (Connection conn = DBUtil.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(SELECT_USER_EMAIL_QUERY)) {
+    try (Connection conn = DbUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(SELECT_USER_EMAIL_QUERY)) {
       stmt.setString(1, userEmail);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
@@ -117,8 +117,8 @@ public class UserDAO {
       logger.info("User id should be greater than 0!");
       return;
     }
-    try (Connection conn = DBUtil.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(DELETE_USER_ID_QUERY)) {
+    try (Connection conn = DbUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(DELETE_USER_ID_QUERY)) {
 
       stmt.setInt(1, userId);
       boolean isOneRow = stmt.executeUpdate() == 1;
@@ -134,8 +134,8 @@ public class UserDAO {
 
   public User[] findALl() {
     User[] users = new User[0];
-    try (Connection conn = DBUtil.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_QUERY)) {
+    try (Connection conn = DbUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_QUERY)) {
 
       ResultSet rs = stmt.executeQuery();
       while (rs.next()) {
@@ -149,8 +149,8 @@ public class UserDAO {
   }
 
   private boolean emailAlreadyExists(User user) throws EmailNotFoundException {
-    try (Connection conn = DBUtil.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(CHECK_EMAIL_QUERY)) {
+    try (Connection conn = DbUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(CHECK_EMAIL_QUERY)) {
       setCheckEmailStatement(user.getId(), user.getEmail(), stmt);
       ResultSet rs = stmt.executeQuery();
       return rs.next();

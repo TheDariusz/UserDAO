@@ -10,15 +10,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-public class DBUtil {
+public class DbUtil {
   public static final String DB_SCHEMA = "workshop2";
   public static final String DB_URL =
           "jdbc:mysql://localhost:3306/" + DB_SCHEMA + "?useSSL=false&characterEncoding=utf8";
   public static final String DB_USER = "root";
   public static final String DB_PASSWORD = "coderslab";
-  private static final Logger logger = LogManager.getLogger(DBUtil.class);
+  private static final Logger logger = LogManager.getLogger(DbUtil.class);
 
-  private DBUtil() {
+  private DbUtil() {
     throw new IllegalStateException("Utility class!");
   }
 
@@ -38,14 +38,18 @@ public class DBUtil {
   }
 
   public static void printData(Connection conn, String query, String... columnNames) {
+
     try (PreparedStatement statement = conn.prepareStatement(query);
         ResultSet resultSet = statement.executeQuery()) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("printData results:\n");
       while (resultSet.next()) {
         for (String param : columnNames) {
-          System.out.print(resultSet.getString(param) + " | ");
+          sb.append(resultSet.getString(param)).append(" | ");
         }
-        System.out.println();
+        sb.append("\n");
       }
+      logger.info(sb);
     } catch (Exception e) {
       logger.error("Problem with print data query!", e);
     }
@@ -68,24 +72,30 @@ public class DBUtil {
         ResultSet rs = statement.executeQuery()) {
       ResultSetMetaData rsmd = rs.getMetaData();
       int numberOfColumns = rsmd.getColumnCount();
+      StringBuilder sb = new StringBuilder();
+      sb.append("printAllData results:\n");
       while (rs.next()) {
         for (int i = 1; i <= numberOfColumns; i++) {
-          System.out.print(rs.getString(i) + " | ");
+          sb.append(rs.getString(i)).append(" | ");
         }
-        System.out.println();
+        sb.append("\n");
       }
+      logger.info(sb);
     } catch (Exception e) {
       logger.error("Problem with print all data query!", e);
     }
   }
 
   public static void printDataRS(ResultSet rs, int... colNumbers) throws SQLException {
+    StringBuilder sb = new StringBuilder();
+    sb.append("printDataRS results:\n");
     while (rs.next()) {
       for (int column : colNumbers) {
-        System.out.print(rs.getString(column) + " | ");
+        sb.append(rs.getString(column)).append(" | ");
       }
-      System.out.println();
+      sb.append("\n");
     }
+    logger.info(sb);
   }
 
   public static void execute(Connection conn, String query) {
