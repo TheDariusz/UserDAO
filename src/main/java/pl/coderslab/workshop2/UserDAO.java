@@ -21,17 +21,19 @@ public class UserDAO {
   private static final String SELECT_USER_EMAIL_QUERY = "SELECT * FROM users WHERE email=?";
   private static final String DELETE_USER_ID_QUERY = "DELETE FROM users WHERE id=?;";
   private static final String SELECT_ALL_QUERY = "SELECT * FROM users";
-  private static final String USERNAME_COL = "username";
-  private static final String EMAIL_COL = "email";
-  private static final String PASSWORD_COL = "password";
   private static final Logger logger = LogManager.getLogger(UserDAO.class);
 
   public User create(User user) {
     if (user == null) {
       return null;
     }
-    if (emailAlreadyExists(user.getId(), user.getEmail())) {
-      logger.error("User with email {} already exists!", user.getEmail());
+
+    try {
+      if (emailAlreadyExists(user)) {
+        throw new EmailNotFoundException("User with email " + user.getEmail() + " already exists!");
+      }
+    } catch (EmailNotFoundException e) {
+      logger.error(e);
       return null;
     }
 
@@ -53,10 +55,16 @@ public class UserDAO {
   }
 
   public void update(User user) {
-    if (emailAlreadyExists(user.getId(), user.getEmail())) {
-      logger.warn("User with email {} already exists!", user.getEmail());
+
+    try {
+      if (emailAlreadyExists(user)) {
+        throw new EmailNotFoundException("User with email " + user.getEmail() + " already exists!");
+      }
+    } catch (EmailNotFoundException e) {
+      logger.error(e);
       return;
     }
+
     try (Connection conn = DBUtil.getConnection();
         PreparedStatement stmt = conn.prepareStatement(UPDATE_USER_QUERY)) {
       setUpdateStatement(user, stmt);
@@ -140,18 +148,15 @@ public class UserDAO {
     return users;
   }
 
-  private boolean emailAlreadyExists(int id, String email) {
+  private boolean emailAlreadyExists(User user) throws EmailNotFoundException {
     try (Connection conn = DBUtil.getConnection();
         PreparedStatement stmt = conn.prepareStatement(CHECK_EMAIL_QUERY)) {
-      setCheckEmailStatement(id, email, stmt);
+      setCheckEmailStatement(user.getId(), user.getEmail(), stmt);
       ResultSet rs = stmt.executeQuery();
-      if (rs.next()) {
-        return true;
-      }
+      return rs.next();
     } catch (SQLException e) {
-      logger.error("Check email query failed!", e);
+      throw new EmailNotFoundException("Check email query failed!");
     }
-    return false;
   }
 
   private String hashPassword(String password) {
@@ -166,7 +171,10 @@ public class UserDAO {
 
   private User getUser(ResultSet rs) throws SQLException {
     User user =
-        new User(rs.getString(USERNAME_COL), rs.getString(EMAIL_COL), rs.getString(PASSWORD_COL));
+        new User(
+            rs.getString(UserTable.USERNAME_COL),
+            rs.getString(UserTable.EMAIL_COL),
+            rs.getString(UserTable.PASSWORD_COL));
     user.setId(rs.getInt("id"));
     return user;
   }
@@ -188,5 +196,22 @@ public class UserDAO {
     stmt.setString(1, user.getUserName());
     stmt.setString(2, user.getEmail());
     stmt.setString(3, hashPassword(user.getPassword()));
+  }
+
+  static class UserTable {
+    private UserTable() {
+      throw new IllegalStateException("Inner class!");
+    }
+
+    public static final String ID_COL = "id";
+    public static final String USERNAME_COL = "username";
+    public static final String EMAIL_COL = "email";
+    public static final String PASSWORD_COL = "password";
+  }
+
+  public class EmailNotFoundException extends Exception {
+    public EmailNotFoundException(String message) {
+      super(message);
+    }
   }
 }

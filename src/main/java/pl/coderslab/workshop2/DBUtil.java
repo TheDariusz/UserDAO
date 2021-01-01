@@ -6,17 +6,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 public class DBUtil {
+  public static final String DB_SCHEMA = "workshop2";
+  public static final String DB_URL =
+          "jdbc:mysql://localhost:3306/" + DB_SCHEMA + "?useSSL=false&characterEncoding=utf8";
+  public static final String DB_USER = "root";
+  public static final String DB_PASSWORD = "coderslab";
+  private static final Logger logger = LogManager.getLogger(DBUtil.class);
+
   private DBUtil() {
     throw new IllegalStateException("Utility class!");
   }
-
-  public static final String DB_SCHEMA = "workshop2";
-  public static final String DB_URL =
-      "jdbc:mysql://localhost:3306/" + DB_SCHEMA + "?useSSL=false&characterEncoding=utf8";
-  public static final String DB_USER = "root";
-  public static final String DB_PASSWORD = "coderslab";
 
   public static Connection getConnection() throws SQLException {
     return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
@@ -29,7 +33,7 @@ public class DBUtil {
       }
       statement.executeUpdate();
     } catch (SQLException e) {
-      e.printStackTrace();
+      logger.error("Problem with insert row query!", e);
     }
   }
 
@@ -43,7 +47,7 @@ public class DBUtil {
         System.out.println();
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Problem with print data query!", e);
     }
   }
 
@@ -55,7 +59,7 @@ public class DBUtil {
       statement.setInt(1, id);
       statement.executeUpdate();
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Problem with delete row query!", e);
     }
   }
 
@@ -71,7 +75,7 @@ public class DBUtil {
         System.out.println();
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Problem with print all data query!", e);
     }
   }
 
@@ -88,7 +92,7 @@ public class DBUtil {
     try (PreparedStatement statement = conn.prepareStatement(query)) {
       statement.executeUpdate();
     } catch (SQLException e) {
-      e.printStackTrace();
+      logger.error("Problem with execute update statement!", e);
     }
   }
 }
