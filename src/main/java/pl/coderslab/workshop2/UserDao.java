@@ -55,7 +55,6 @@ public class UserDao {
   }
 
   public void update(User user) {
-
     try {
       if (emailAlreadyExists(user)) {
         throw new EmailNotFoundException("User with email " + user.getEmail() + " already exists!");
