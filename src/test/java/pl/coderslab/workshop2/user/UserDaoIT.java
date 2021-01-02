@@ -1,7 +1,7 @@
 package pl.coderslab.workshop2.user;
 
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pl.coderslab.workshop2.user.exception.UserDaoException;
 import pl.coderslab.workshop2.user.exception.UserNotFoundException;
@@ -13,8 +13,8 @@ class UserDaoIT {
 
     private static UserDao userDao;
 
-    @BeforeAll
-    public static void init() {
+    @BeforeEach
+    public void init() {
         userDao = new UserDao();
         userDao.deleteAll();
     }
