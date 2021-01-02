@@ -1,22 +1,29 @@
-package pl.coderslab.workshop2;
+package pl.coderslab.workshop2.user;
 
 public class User {
-  private int id = 0;
+  private long id;
   private String userName;
   private String email;
   private String password;
 
-  public User(String userName, String email, String password) {
-    this.userName = userName;
+  public User(Long id, String username, String email, String password) {
+    this.id = id;
+    this.userName = username;
     this.email = email;
     this.password = password;
   }
 
-  public int getId() {
+  public User(String username, String email, String password) {
+    this.userName = username;
+    this.email = email;
+    this.password = password;
+  }
+
+  public Long getId() {
     return id;
   }
 
-  public void setId(int id) {
+  public void setId(Long id) {
     this.id = id;
   }
 
