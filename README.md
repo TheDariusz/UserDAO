@@ -13,7 +13,7 @@ When container is up and running migrate schema:
 
 DB properties:
 
-#### jdbc-url:```jdbc:mysql://localhost:3306/workshop2?useSSL=false&characterEncoding=UTF-8```
+#### jdbc-url:```jdbc:mysql://localhost:3307/workshop2?useSSL=false&characterEncoding=UTF-8```
 #### schema: workshop2
 #### user: root
 #### db-pass: coderslab

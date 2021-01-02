@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class DBUtil {
 
   public static final String DB_SCHEMA = "workshop2";
-  public static final String DB_URL = "jdbc:mysql://localhost:3306/" + DB_SCHEMA + "?useSSL=false&characterEncoding=utf8";
+  public static final String DB_URL = "jdbc:mysql://localhost:3307/" + DB_SCHEMA + "?useSSL=false&characterEncoding=utf8";
   public static final String DB_USER = "root";
   public static final String DB_PASSWORD = "coderslab";
 
