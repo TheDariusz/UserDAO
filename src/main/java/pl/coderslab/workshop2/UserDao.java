@@ -9,18 +9,10 @@ import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pl.coderslab.bcrypt.BCrypt;
+import pl.coderslab.workshop2.exceptions.EmailDuplicateException;
+import pl.coderslab.workshop2.exceptions.UserDaoException;
 
 public class UserDao {
-  private static final String CREATE_USER_QUERY =
-      "INSERT INTO users(username, email, password) VALUES (?, ?, ?)";
-  private static final String UPDATE_USER_QUERY =
-      "UPDATE users SET username=?, email=?, password=? WHERE id=?";
-  private static final String CHECK_EMAIL_QUERY =
-      "SELECT users.id FROM users WHERE email=? and id<>?";
-  private static final String SELECT_USER_ID_QUERY = "SELECT * FROM users WHERE id=?";
-  private static final String SELECT_USER_EMAIL_QUERY = "SELECT * FROM users WHERE email=?";
-  private static final String DELETE_USER_ID_QUERY = "DELETE FROM users WHERE id=?;";
-  private static final String SELECT_ALL_QUERY = "SELECT * FROM users";
   private static final Logger logger = LogManager.getLogger(UserDao.class);
 
   public User create(User user) {
@@ -28,76 +20,72 @@ public class UserDao {
       return null;
     }
 
-    try {
-      if (emailAlreadyExists(user)) {
-        throw new EmailNotFoundException("User with email " + user.getEmail() + " already exists!");
-      }
-    } catch (EmailNotFoundException e) {
-      logger.error(e);
-      return null;
+    if (emailAlreadyExists(user)) {
+      throw new EmailDuplicateException("User with email " + user.getEmail() + " already exists!");
     }
 
+    String createUserQuery = "INSERT INTO users(username, email, password) VALUES (?, ?, ?)";
     try (Connection conn = DbUtil.getConnection();
-         PreparedStatement stmt =
-            conn.prepareStatement(CREATE_USER_QUERY, Statement.RETURN_GENERATED_KEYS)) {
+        PreparedStatement stmt =
+            conn.prepareStatement(createUserQuery, Statement.RETURN_GENERATED_KEYS)) {
       setCreateStatement(user, stmt);
       stmt.executeUpdate();
+
       ResultSet rs = stmt.getGeneratedKeys();
       if (rs.next()) {
         user.setId(rs.getInt(1));
       }
       logger.info("User {id: {}, email: {}} created in DB!", user.getId(), user.getEmail());
+      rs.close();
       return user;
     } catch (SQLException e) {
-      logger.error("Create user query failed!", e);
-      return null;
+      throw new UserDaoException("Create user query failed!", e);
     }
   }
 
   public void update(User user) {
-    try {
-      if (emailAlreadyExists(user)) {
-        throw new EmailNotFoundException("User with email " + user.getEmail() + " already exists!");
-      }
-    } catch (EmailNotFoundException e) {
-      logger.error(e);
-      return;
+    if (emailAlreadyExists(user)) {
+      throw new EmailDuplicateException("User with email " + user.getEmail() + " already exists!");
     }
 
+    String updateUserQuery = "UPDATE users SET username=?, email=?, password=? WHERE id=?";
     try (Connection conn = DbUtil.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(UPDATE_USER_QUERY)) {
+        PreparedStatement stmt = conn.prepareStatement(updateUserQuery)) {
       setUpdateStatement(user, stmt);
       stmt.executeUpdate();
       logger.info("User {id: {}, email: {}} updated in DB!", user.getId(), user.getEmail());
     } catch (SQLException e) {
-      logger.error("Update query failed!", e);
+      throw new UserDaoException("Update user query failed!", e);
     }
   }
 
-  public User read(int userId) {
+  public User read(long userId) {
     if (userId <= 0) {
       logger.info("User id should be greater than 0!");
       return null;
     }
 
+    String selectUserIdQuery = "SELECT * FROM users WHERE id=?";
     try (Connection conn = DbUtil.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(SELECT_USER_ID_QUERY)) {
-      stmt.setInt(1, userId);
+        PreparedStatement stmt = conn.prepareStatement(selectUserIdQuery)) {
+      stmt.setLong(1, userId);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
         return getUser(rs);
       } else {
         logger.info("User with id:{} does not exists in DB!", userId);
       }
+      rs.close();
     } catch (SQLException e) {
-      logger.error("User select query failed!", e);
+      throw new UserDaoException("User select query failed!", e);
     }
     return null;
   }
 
   public User read(String userEmail) {
+    String selectUserEmailQuery = "SELECT * FROM users WHERE email=?";
     try (Connection conn = DbUtil.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(SELECT_USER_EMAIL_QUERY)) {
+        PreparedStatement stmt = conn.prepareStatement(selectUserEmailQuery)) {
       stmt.setString(1, userEmail);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
@@ -105,8 +93,9 @@ public class UserDao {
       } else {
         logger.info("User with email:{} does not exists in DB!", userEmail);
       }
+      rs.close();
     } catch (SQLException e) {
-      logger.error("User select query failed!", e);
+      throw new UserDaoException("User select query failed!", e);
     }
     return null;
   }
@@ -116,9 +105,10 @@ public class UserDao {
       logger.info("User id should be greater than 0!");
       return;
     }
-    try (Connection conn = DbUtil.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(DELETE_USER_ID_QUERY)) {
 
+    String deleteUserIdQuery = "DELETE FROM users WHERE id=?;";
+    try (Connection conn = DbUtil.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(deleteUserIdQuery)) {
       stmt.setInt(1, userId);
       boolean isOneRow = stmt.executeUpdate() == 1;
       if (isOneRow) {
@@ -127,34 +117,39 @@ public class UserDao {
         logger.info("User with id:{} was not found in DB!", userId);
       }
     } catch (SQLException e) {
-      logger.error("Delete user query failed!", e);
+      throw new UserDaoException("Delete user query failed!", e);
     }
   }
 
   public User[] findALl() {
     User[] users = new User[0];
+
+    String selectAllQuery = "SELECT * FROM users";
     try (Connection conn = DbUtil.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_QUERY)) {
+        PreparedStatement stmt = conn.prepareStatement(selectAllQuery)) {
 
       ResultSet rs = stmt.executeQuery();
       while (rs.next()) {
         User user = getUser(rs);
         users = addToArray(user, users);
       }
+      rs.close();
     } catch (SQLException e) {
       logger.error("Select all users query failed!", e);
     }
     return users;
   }
 
-  private boolean emailAlreadyExists(User user) throws EmailNotFoundException {
+  private boolean emailAlreadyExists(User user) {
+    String checkEmailQuery = "SELECT users.id FROM users WHERE email=? and id<>?";
     try (Connection conn = DbUtil.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(CHECK_EMAIL_QUERY)) {
+        PreparedStatement stmt = conn.prepareStatement(checkEmailQuery)) {
       setCheckEmailStatement(user.getId(), user.getEmail(), stmt);
-      ResultSet rs = stmt.executeQuery();
-      return rs.next();
+      try (ResultSet rs = stmt.executeQuery()) {
+        return rs.next();
+      }
     } catch (SQLException e) {
-      throw new EmailNotFoundException("Check email query failed!");
+      throw new UserDaoException("Check email query failed!");
     }
   }
 
@@ -174,21 +169,21 @@ public class UserDao {
             rs.getString(UserTable.USERNAME_COL),
             rs.getString(UserTable.EMAIL_COL),
             rs.getString(UserTable.PASSWORD_COL));
-    user.setId(rs.getInt("id"));
+    user.setId(rs.getLong(UserTable.ID_COL));
     return user;
   }
 
-  private void setCheckEmailStatement(int id, String email, PreparedStatement stmt)
-          throws SQLException {
+  private void setCheckEmailStatement(long id, String email, PreparedStatement stmt)
+      throws SQLException {
     stmt.setString(1, email);
-    stmt.setInt(2, id);
+    stmt.setLong(2, id);
   }
 
   private void setUpdateStatement(User user, PreparedStatement stmt) throws SQLException {
     stmt.setString(1, user.getUserName());
     stmt.setString(2, user.getEmail());
     stmt.setString(3, hashPassword(user.getPassword()));
-    stmt.setInt(4, user.getId());
+    stmt.setLong(4, user.getId());
   }
 
   private void setCreateStatement(User user, PreparedStatement stmt) throws SQLException {
@@ -206,11 +201,5 @@ public class UserDao {
     public static final String USERNAME_COL = "username";
     public static final String EMAIL_COL = "email";
     public static final String PASSWORD_COL = "password";
-  }
-
-  public class EmailNotFoundException extends Exception {
-    public EmailNotFoundException(String message) {
-      super(message);
-    }
   }
 }

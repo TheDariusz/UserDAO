@@ -1,7 +1,7 @@
 package pl.coderslab.workshop2;
 
 public class User {
-  private int id = 0;
+  private long id = 0;
   private String userName;
   private String email;
   private String password;
@@ -12,11 +12,11 @@ public class User {
     this.password = password;
   }
 
-  public int getId() {
+  public long getId() {
     return id;
   }
 
-  public void setId(int id) {
+  public void setId(long id) {
     this.id = id;
   }
 
